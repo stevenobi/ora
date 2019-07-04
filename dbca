@@ -1,0 +1,11 @@
+when trying to install an configure an Oracle 12c, 18c or 19c database with dbca in silent mode, you can encounter several issues:
+
+1.) [FATAL] [DBT-10503] Template file is not specified.
+
+came across this one when using the Template "New_Database.dbt".
+When using the template "General_Purpose.dbc" it worked.
+
+A look into these files shows that the latter is using a different format,
+so it seems that dbca is not able to parse the legacy .dbt format.
+
+
