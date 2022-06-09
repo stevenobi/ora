@@ -1,0 +1,39 @@
+[root@ol8 ~]# hostname
+ol8.bls.biz
+[root@ol8 ~]# more /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+[root@ol8 ~]# more /etc/sysconfig/network
+# Created by anaconda
+[root@ol8 ~]# firewall-cmd --permanent --zone=public --add-port=2021/tcp
+success
+[root@ol8 ~]# firewall-cmd --permanent --zone=public --add-port=2022/tcp
+success
+[root@ol8 ~]# firewall-cmd --permanent --zone=public --add-port=2023/tcp
+success
+[root@ol8 ~]# firewall-cmd --permanent --zone=public --add-port=2024/tcp
+success
+[root@ol8 ~]# firewall-cmd --permanent --zone=public --add-port=2025/tcp
+success
+[root@ol8 ~]# firewall-cmd --permanent --zone=public --add-port=22/tcp
+success
+[root@ol8 ~]# firewall-cmd --reload
+success
+
+An error was encountered performing the requested operation:
+
+ORA-28040: No matching authentication protocol
+28040. 0000 -  "No matching authentication protocol"
+*Cause:    There was no acceptable authentication protocol for
+           either client or server.
+*Action:   The administrator should set the values of the
+           SQLNET.ALLOWED_LOGON_VERSION_SERVER and
+           SQLNET.ALLOWED_LOGON_VERSION_CLIENT parameters, on both the
+           client and on the server, to values that match the minimum
+           version software supported in the system.
+           This error is also raised when the client is authenticating to
+           a user account which was created without a verifier suitable for
+           the client software version. In this situation, that account's
+           password must be reset, in order for the required verifier to
+           be generated and allow authentication to proceed successfully.
+Vendor code 28040
