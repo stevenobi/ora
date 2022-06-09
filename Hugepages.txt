@@ -1,0 +1,140 @@
+Alert.log on startup:
+
+************************************************************
+2022-04-03T17:45:02.935704+02:00
+****************************************************
+ Sys-V shared memory will be used for creating SGA
+ ****************************************************
+2022-04-03T17:45:02.936640+02:00
+**********************************************************************
+2022-04-03T17:45:02.936751+02:00
+Dump of system resources acquired for SHARED GLOBAL AREA (SGA)
+
+2022-04-03T17:45:02.936975+02:00
+ Per process system memlock (soft) limit = 64K
+2022-04-03T17:45:02.937085+02:00
+ Expected per process system memlock (soft) limit to lock
+ instance MAX SHARED GLOBAL AREA (SGA) into memory: 3202M
+2022-04-03T17:45:02.937293+02:00
+ Available system pagesizes:
+  4K, 2048K
+2022-04-03T17:45:02.937525+02:00
+ Supported system pagesize(s):
+2022-04-03T17:45:02.937644+02:00
+  PAGESIZE  AVAILABLE_PAGES  EXPECTED_PAGES  ALLOCATED_PAGES  ERROR(s)
+2022-04-03T17:45:02.937742+02:00
+        4K       Configured               9           819209        NONE
+2022-04-03T17:45:02.937919+02:00
+     2048K                0            1601                0        NONE
+2022-04-03T17:45:02.938039+02:00
+RECOMMENDATION:
+2022-04-03T17:45:02.938121+02:00
+ 1. For optimal performance, configure system with expected number
+ of pages for every supported system pagesize prior to the next
+ instance restart operation.
+2022-04-03T17:45:02.942005+02:00
+ 2. Increase per process memlock (soft) limit to at least 3202MB
+ to lock 100% of SHARED GLOBAL AREA (SGA) pages into physical memory
+2022-04-03T17:45:02.942287+02:00
+**********************************************************************
+
+
+SQL> select value from v$parameter where name = 'use_large_pages';
+
+VALUE
+--------------------------------------------------------------------------------
+TRUE
+
+SQL> select value/1024 from v$parameter where name = 'sga_target';
+
+VALUE/1024
+----------
+   3276800
+
+[oracle@ol8 trace]$ grep Hugepagesize /proc/meminfo
+Hugepagesize:       2048 kB
+
+4. Calculate Hugepages
+For the calculation of the number of hugepages there is a easy way:
+
+SGA / Hugepagesize = Number Hugepages
+Following our example:
+
+3276800 / 2048 = 1600
+
+
+Change Server Configuration
+The next step is to enter the number of hugepages in the server config file.
+For that you need root permissions. On Red Hat Linux 6 /etc/sysctl.conf.
+
+vi /etc/sysctl.conf or /etc/sysctl.d/99-oracle-database-21c-sysctl.conf
+
+vm.nr_hugepages=1600
+Correctly inserted, following result should show up:
+
+grep vm.nr_hugepages /etc/sysctl.conf
+
+vm.nr_hugepages=1600
+
+The next parameter is hard and soft memlock in /etc/security/limits.conf for our oracle user.
+This value should be smaller than our available memory but minor to our SGA.
+Our hugepages should fit into that by 100 percent. For that following calculation:
+
+Number Hugepages * Hugepagesize = minimum Memlock
+Following our example:
+
+1601 * 2048 = 3276800
+
+
+vi /etc/security/limits.conf
+
+oracle               soft    memlock 3278848
+oracle               hard    memlock 3278848
+
+Correctly inserted, following result should show up:
+[root@ol8 sysctl.d]# cat /etc/security/limits.conf |grep oracle
+oracle soft memlock 3278848
+oracle hard memlock 3278848
+oracle soft nproc 2047
+oracle hard nproc 16384
+oracle soft nofile 1024
+oracle hard nofile 65536
+
+
+As mentioned before we have to disable transparent hugepages from Red Hat Linux version 6 ongoing:
+
+[root@ol8 mm]# cat /sys/kernel/mm/transparent_hugepage/enabled
+[always] madvise never
+[root@ol8 mm]# echo never > /sys/kernel/mm/transparent_hugepage/enabled
+[root@ol8 mm]# echo never > /sys/kernel/mm/transparent_hugepage/defrag
+[root@ol8 mm]# cat /sys/kernel/mm/transparent_hugepage/enabled
+always madvise [never]
+
+cat /sys/kernel/mm/transparent_hugepage/enabled
+[always] madvise never
+
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+echo never > /sys/kernel/mm/transparent_hugepage/defrag
+
+cat /sys/kernel/mm/transparent_hugepage/enabled
+always madvise [never]
+
+
+## check values
+[root@ol8 ~]# sudo su - oracle
+[oracle@ol8 ~]$ ulimit -l
+3276800
+
+[root@ol8 mm]# grep Huge /proc/meminfo
+AnonHugePages:    124928 kB
+ShmemHugePages:        0 kB
+FileHugePages:    389120 kB
+HugePages_Total:     884
+HugePages_Free:      884
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:         1810432 kB
+
+[oracle@ol8 ~]$ cat /sys/kernel/mm/transparent_hugepage/enabled
+always madvise [never]
