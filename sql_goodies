@@ -1,0 +1,32 @@
+-----------------------------------------------------------------------------
+-- SQL Goodies
+
+
+-----------------------------------------------------------------------------
+-- Constraints
+-----------------------------------------------------------------------------
+-- find all foreign key references from table 
+SELECT a.table_name, a.column_name, a.constraint_name, c.owner, 
+       -- referenced pk
+       c.r_owner, c_pk.table_name r_table_name, c_pk.constraint_name r_pk
+  FROM all_cons_columns a
+  JOIN all_constraints c ON a.owner = c.owner
+                        AND a.constraint_name = c.constraint_name
+  JOIN all_constraints c_pk ON c.r_owner = c_pk.owner
+                           AND c.r_constraint_name = c_pk.constraint_name
+ WHERE c.constraint_type = 'R'
+   AND a.table_name = :TableName
+   AND a.owner = :Owner;
+
+-- find all foreign key references to table
+SELECT AC.TABLE_NAME,
+       AC.R_CONSTRAINT_NAME,
+       ACC.TABLE_NAME,
+       ACC.COLUMN_NAME
+FROM ALL_CONSTRAINTS  AC,
+     ALL_CONS_COLUMNS ACC
+WHERE AC.R_CONSTRAINT_NAME = ACC.CONSTRAINT_NAME
+      AND AC.CONSTRAINT_TYPE = 'R'
+    AND ACC.TABLE_NAME = :TableName
+    AND ACC.OWNER = :Owner;
+
