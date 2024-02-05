@@ -2,6 +2,159 @@
 -- SQL Goodies
 -------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------
+-- Object Queries (taken from TOAD)
+
+-- Tables
+SELECT  O.OWNER, O.OBJECT_TYPE, O.OBJECT_NAME, O.STATUS, O.LAST_DDL_TIME, null info
+from   sys.DBA_OBJECTS o
+where  o.object_type = 'TABLE'
+AND    O.OWNER = :own
+and    not exists (select 1
+                   from   ALL_SNAPSHOTS s
+                   where  o.owner = s.owner
+                   and    o.OBJECT_NAME = s.NAME)
+and exists (select 1
+            from V$OBJLST l
+            where l.object_name = o.object_name
+            and l.object_type = o.object_type
+            and l.owner is not null)
+order by 1,2,3;
+
+-- Views
+Select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'VIEW'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = o.object_type
+and l.owner is not null)
+order by 1,2,3;
+
+-- Functions
+Select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'FUNCTION'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = o.object_type
+and l.owner is not null)
+order by 1,2,3;
+
+-- Procedures
+select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'PROCEDURE'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = o.object_type
+and l.owner is not null)
+order by 1,2,3;
+
+-- Packages
+select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'PACKAGE'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = o.object_type
+and l.owner is not null)
+order by 1,2,3;
+
+-- Package Bodies
+select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'PACKAGE BODY'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = 'PACKAGE' -- we don't have package bodies in view, but packages
+and l.owner is not null)
+order by 1,2,3;
+
+-- Triggers (are exported with tables)
+select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'TRIGGER'
+and 1=0 --are exported with tables
+order by 1,2,3;
+
+-- Indexes
+select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'INDEX'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = o.object_type
+and l.owner is not null)
+order by 1,2,3;
+
+-- Constraints
+select owner, 'CONSTRAINT' OBJECT_TYPE, CONSTRAINT_NAME OBJECT_NAME, STATUS, LAST_CHANGE LAST_DDL_TIME, null info
+from   ALL_CONSTRAINTS
+where   OWNER = :own
+and 1=0 --are exported with tables
+order by 1,2,3;
+
+-- Sequences
+select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'SEQUENCE'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = o.object_type
+and l.owner is not null)
+order by 1,2,3;
+
+-- Types
+select o.owner, o.object_type object_type,
+       o.object_name, o.status, o.last_ddl_time, null info
+from   DBA_OBJECTS o
+where o.owner = :own
+and o.object_type = 'TYPE'
+and exists (select 1
+from V$OBJLST l
+where l.object_name = o.object_name
+and l.object_type = o.object_type
+and l.owner is not null)
+order by 1,2,3;
+
+-- Materialized View
+SELECT  distinct o.owner, 'MATERIALIZED VIEW' OBJECT_TYPE, O.OBJECT_NAME, O.STATUS, O.LAST_DDL_TIME, null info
+from   ALL_MVIEWS S, DBA_OBJECTS O
+WHERE  O.OWNER = S.OWNER
+AND    O.OBJECT_NAME = S.MVIEW_NAME
+AND    O.OBJECT_TYPE = 'MATERIALIZED VIEW'
+AND    O.OWNER = :own
+AND exists (select 1
+            from V$OBJLST l
+            where l.object_name = o.object_name
+            and l.object_type = 'MATERIALIZED'
+            and l.owner is not null)
+order by 1,2,3
+
 
 
 -------------------------------------------------------------------------------
