@@ -3,6 +3,28 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- Object Grants (taken from http://stackoverflow.com/questions/14462353/ddg#14463332)
+
+-- For example, you want to grant update privilege on ename column only, 
+-- then give the following statement (where xyz is the username)
+
+grant update (ename) on emp to xyz;
+
+-- Syntax: grant update(column-name) on table-name to user-name
+
+-- To grant select statement on emp table to XYZ and to make XYZ be able to further pass on 
+-- this privilege you have to give WITH GRANT OPTION clause in GRANT statement like this.
+
+grant select on emp to xyz with grant option;
+
+-- Also, For example you want to grant update privilege on ename column only 
+-- and insert privilege on empno and ename columns only, you can do this:
+
+grant update (ename),insert (empno, ename)  on emp to xyz;
+
+
+
+-------------------------------------------------------------------------------
 -- Object Queries (taken from TOAD)
 
 -- Tables
