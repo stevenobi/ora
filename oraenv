@@ -1,0 +1,329 @@
+
+bash_profile
+
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+# Oracle Directories (Linux Default)
+export ORAOWN=oracle
+export ORADIR=/u01/app/${ORAOWN}
+export ORAVAR=/var/opt/${ORAOWN}
+export TMP=${ORAVAR}/tmp
+export TMPDIR=${TMP}
+
+# Oracle Database
+export ORACLE_SID=
+export ORACLE_HOME=
+export ORAENV_ASK=NO
+# only run oraenv, if ORACLE_SID and ORACLE_HOME are set
+#. ${ORACLE_HOME}/bin/oraenv >/dev/null
+
+# Oracle Base
+[ -z ${ORACLE_BASE} ] && export ORACLE_BASE=${ORADIR}
+
+export ORACLE_DIAG=${ORACLE_BASE}/diag
+export CFGLOGS=${ORACLE_HOME}/cfgtoollogs
+export SQLCLD=${ORACLE_HOME}/sqlc/bin
+
+# JAVA
+# JAVA_HOME is set by ~/conf/oracle_rc
+
+# ORDS
+#export ORDS_HOME=${ORACLE_BASE}/product/ords
+#export ORDS_CONFIG=${HOME}/conf/ords/conf
+#export ORDS_LOG=/var/log/ords/ords.log
+
+# APEX
+#export APEX_HOME=${ORACLE_BASE}/product/apex
+#export APEX_IMAGES=${APEX_HOME}/images
+
+# PATH
+export SHELL_DEFAULT_PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/${USER}/bin:/${USER}/.local/bin
+export ORACLE_DEFAULT_PATH=${ORACLE_HOME}/bin:${ORACLE_HOME}/perl/bin:${ORACLE_HOME}/OPatch:${ORACLE_HOME}/jdk/bin:${SQLCLD}:${CFGLOGS}:${ORACLE_DIAG}
+export LD_LIBRARY_PATH=${ORACLE_HOME}/lib
+export ORACLE_DIAG=${ORACLE_BASE}/diag
+export PATH=${SHELL_DEFAULT_PATH}:${ORACLE_DEFAULT_PATH}
+
+###############################################################################
+# Oracle Config Directory
+export ENVD=${HOME}/conf/env
+
+# Oracle Environment
+if [ -a ${ENVD}/oracle_env ]; then
+    .  ${ENVD}/oracle_env
+fi
+
+# Oracle Functions and Aliases
+if [ -a  ${ENVD}/oracle_rc ]; then
+    .  ${ENVD}/oracle_rc
+fi
+
+
+
+bashrc
+
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+fi
+
+# User specific environment
+if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]
+then
+    PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+fi
+export PATH
+
+# User specific aliases and functions
+
+# make Oracle accept your OS version as 8.7 (cheat)
+export CV_ASSUME_DISTID=OEL8.7
+
+
+
+oracle_aliases
+
+#!/usr/bin/env bash
+
+# oracle specific aliases
+[ ! -z ${ORACLE_SID} ] && [ ! -z ${ORACLE_HOME} ] && [ ! -z ${ORACLE_BASE} ] && {
+alias osid='echo ${ORACLE_SID}'
+alias oh='echo ${ORACLE_HOME}'
+alias ob='echo ${ORACLE_BASE}'
+alias cdb='cd ${ORACLE_BASE}'
+alias cdh='cd ${ORACLE_HOME}'
+alias cdn='cd ${ORACLE_HOME}/network/admin'
+alias diag='cd ${ORACLE_BASE}/diag'
+alias cop='cd ${ORACLE_HOME}/OPatch'
+alias cos='cd ${ORACLE_BASE}/software'
+alias cop='cd ${ORACLE_BASE}/product'
+alias coa='cd ${ORACLE_BASE}/product/apex'
+alias cod='cd ${ORACLE_BASE}/product/ords'
+alias sqlsys='sqlplus -s / as sysdba'
+  # ords (if installed)
+  [ -a ${ORACLE_BASE}/product/ords/ords_system.log ] && {
+    alias ordsl='tail -f ${ORACLE_BASE}/product/ords/ords_system.log'
+    alias ordslv='vi + ${ORACLE_BASE}/product/ords/ords_system.log'
+  }
+  # oracle alert file
+  [ ! -z ${TRACE_FILE} ] && {
+    alias alert='tail -f ${TRACE_FILE}'
+    alias alertv='vim + ${TRACE_FILE}'
+  }
+}
+
+# functions (in oracle_rc)
+alias ora=oex
+# list oracle homes
+alias lh=lsoh
+# show oratab
+alias otab='cat /etc/oratab'
+alias ens='env | sort'
+alias eno='env | grep -i "ORA" |sort'
+alias oraps='ps -ef| grep -v grep | grep "ora_\|db_"'
+alias lsnrps='ps -ef| grep -v grep | grep tnslsnr'
+alias ordps='ps -ef|grep -v grep|grep ords.war'
+
+# oracle custom home folders
+alias stage='cd ${HOME}/stage'
+alias scripts='cd ${HOME}/scripts'
+alias sqld='cd ${HOME}/scripts/sql'
+alias shd='cd ${HOME}/scripts/sh'
+alias cnf='cd ${HOME}/conf'
+
+# bash commaand aliases
+alias ll='ls -l'
+alias lr='ls -ltr'
+alias lR='ls -ltR'
+alias la='ls -la'
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+
+
+oracle_env
+
+#!/bin/bash
+
+# Oracle Directories
+export ORAOWN=oracle
+export ORADIR=/opt/${ORAOWN}
+export ORAVAR=/var/opt/${ORAOWN}
+export TMP=${ORAVAR}/tmp
+export TMPDIR=${TMP}
+
+# Oracle Database
+export ORACLE_SID=FREE
+export ORACLE_HOME=/opt/${ORAOWN}/product/23ai/dbhomeFree
+export ORAENV_ASK=NO
+. ${ORACLE_HOME}/bin/oraenv >/dev/null
+
+# Oracle Base
+[ -z ${ORACLE_BASE} ] && export ORACLE_BASE=${ORADIR}
+
+export ORACLE_DIAG=${ORACLE_BASE}/diag
+export CFGLOGS=${ORACLE_HOME}/cfgtoollogs
+export SQLCLD=${ORACLE_HOME}/sqlcl/bin
+
+# JAVA
+# JAVA_HOME is set by oracle_rc
+# export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+
+# ORDS
+export ORDS_HOME=${ORACLE_BASE}/product/ords
+export ORDS_CONFIG=${HOME}/conf/ords/conf
+export ORDS_LOG=/var/log/ords/ords.log
+
+# APEX
+export APEX_HOME=${ORACLE_BASE}/product/apex
+export APEX_IMAGES=${APEX_HOME}/images
+
+# PATH
+export SHELL_DEFAULT_PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/${USER}/bin:/${USER}/.local/bin
+export ORACLE_DEFAULT_PATH=${ORACLE_HOME}/bin:${ORACLE_HOME}/perl/bin:${ORACLE_HOME}/OPatch:${ORACLE_HOME}/jdk/bin:${SQLCLD}:${CFGLOGS}:${ORACLE_DIAG}
+export LD_LIBRARY_PATH=${ORACLE_HOME}/lib
+export ORACLE_DIAG=${ORACLE_BASE}/diag
+export PATH=${SHELL_DEFAULT_PATH}:${ORACLE_DEFAULT_PATH}
+
+# NLS Language for shell
+export NLS_LANG=American_America.AL32UTF8
+
+# New history settings  https://unix.stackexchange.com/questions/1288/preserve-bash-history-in-multiple-terminal-windows
+
+export HISTCONTROL=ignoreboth:erasedups  # no duplicate entries edited to ignore the blank line start too
+export HISTSIZE=100000                   # big big history
+export HISTFILESIZE=100000               # big big history
+shopt -s histappend                      # append to history, don't overwrite it
+
+# Save and reload the history after each command finishes
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
+
+
+oracle_rc
+
+# oracle_rc
+#
+# invoked by .bashrc (and sourced by .bash_profile in first step)
+#
+
+# change Oracle Environment to SID
+oex(){
+  [ -z ${1} ] && {
+    echo "Usage: oex [ORACLE_SID]";
+    return 0;
+  } || {
+    OSID=$(cat /etc/oratab | egrep -v '^#' | cut -d: -f1 | grep -w ${1})
+    [ -z ${OSID} ] && {
+        echo;
+        echo "*** ERROR: Invalid ORACLE_SID => ${1}";
+        echo "See list below:";
+        for i in $(cat /etc/oratab | egrep -v '^#' | cut -d: -f1); do
+          echo ${i}
+        done;
+        echo;
+        return 0;
+    } || {
+        export ORACLE_SID=${1}
+        . oraenv>/dev/null 2>&1
+        export PATH=${SHELL_DEFAULT_PATH}:${ORACLE_DEFAULT_PATH}
+        echo "New PATH: $PATH"
+        export SQLPATH=${HOME}/scripts/sql
+        export DIAG_DIR=${ORACLE_BASE}/diag/rdbms
+        export TRACE_DIR=${DIAG_DIR}/${ORACLE_SID,,}/${ORACLE_SID}/trace
+        export TRACE_FILE=${TRACE_DIR}/alert_${ORACLE_SID}.log
+        # reset aliases
+        SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+        [ -a ${SCRIPT_DIR}/oracle_aliases ] && . ${SCRIPT_DIR}/oracle_aliases
+        echo ORACLE_SID=${ORACLE_SID}
+        echo ORACLE_HOME=${ORACLE_HOME}
+    }
+  }
+}
+
+# list oracle homes
+###############################################################################
+#
+# lsoh is a function (and called in this script)
+# (c) 2016 Ludovico Caldara
+# https://www.ludovicocaldara.net/dba/getting-oracle-homes-from-orainventory/
+#
+################################################################################
+lsoh ()
+{
+    CENTRAL_ORAINV=`grep ^inventory_loc /etc/oraInst.loc | awk -F= '{print $2}'`;
+    IFS='
+';
+    echo;
+    printf "%-22s %-55s %-12s %-9s\n" HOME LOCATION VERSION EDITION;
+    echo ---------------------- ------------------------------------------------------- ------------ ---------;
+    for line in `grep "<HOME NAME=" ${CENTRAL_ORAINV}/ContentsXML/inventory.xml 2>/dev/null`;
+    do
+        unset ORAVERSION;
+        unset ORAEDITION;
+        OH=`echo $line | tr ' ' '\n' | grep ^LOC= | awk -F\" '{print $2}'`;
+        OH_NAME=`echo $line | tr ' ' '\n' | grep ^NAME= | awk -F\" '{print $2}'`;
+        comp_file=$OH/inventory/ContentsXML/comps.xml;
+        comp_xml=`grep "COMP NAME" $comp_file | head -1`;
+        comp_name=`echo $comp_xml | tr ' ' '\n' | grep ^NAME= | awk -F\" '{print $2}'`;
+        comp_vers=`echo $comp_xml | tr ' ' '\n' | grep ^VER= | awk -F\" '{print $2}'`;
+        case $comp_name in
+            "oracle.crs")
+                ORAVERSION=$comp_vers;
+                ORAEDITION=GRID
+            ;;
+            "oracle.sysman.top.agent")
+                ORAVERSION=$comp_vers;
+                ORAEDITION=AGT
+            ;;
+            "oracle.server")
+                ORAVERSION=`grep "PATCH NAME=\"oracle.server\"" $comp_file 2>/dev/null | tr ' ' '\n' | grep ^VER= | awk -F\" '{print $2}'`;
+                ORAEDITION="DBMS";
+                if [ -z "$ORAVERSION" ]; then
+                    ORAVERSION=$comp_vers;
+                fi;
+                ORAMAJOR=`echo $ORAVERSION |  cut -d . -f 1`;
+                case $ORAMAJOR in
+                    11 | 12)
+                        ORAEDITION="DBMS "`grep "oracle_install_db_InstallType" $OH/inventory/globalvariables/oracle.server/globalvariables.xml 2>/dev/null | tr ' ' '\n' | grep VALUE | awk -F\" '{print $2}'`
+                    ;;
+                    10)
+                        ORAEDITION="DBMS "`grep "s_serverInstallType" $OH/inventory/Components21/oracle.server/*/context.xml 2>/dev/null | tr ' ' '\n' | grep VALUE | awk -F\" '{print $2}'`
+                    ;;
+                esac
+            ;;
+        esac;
+        [[ -n $ORAEDITION ]] && printf "%-22s %-55s %-12s %-9s\n" $OH_NAME $OH $ORAVERSION $ORAEDITION;
+    done;
+    echo
+}
+
+
+# Oracle Aliases
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+if [ -a  ${SCRIPT_DIR}/oracle_aliases ]; then
+    .  ${SCRIPT_DIR}/oracle_aliases
+fi
+
+# emacs
+set -o emacs
+
+# editor
+set EDITOR=vi
+
+# java home (if installed use it, else use jdk in ORACLE_HOME)
+[ -a /usr/bin/javac ] && {
+    export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+} || {
+  export JAVA_HOME=${ORACLE_HOME}/jdk
+}
+
