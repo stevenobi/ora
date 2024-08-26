@@ -1,0 +1,393 @@
+:::::: _SQLC.cmd ::::::
+
+@REM =====================================================================
+@REM SQLC.cmd
+@REM Script to call sqlCL
+@echo off
+setlocal enableextensions
+@REM =====================================================================
+@REM script variables
+set "_SCRIPT=%~n0"
+set "_SCRIPTNAME=%0"
+set "_SCRIPTDIR=%~dp0"
+
+@REM Main Wrapper
+set "_MAINCMD=%_SCRIPTDIR%_SQL.cmd"
+
+@REM sqlCL
+set "_SQLBIN=SQLcl"
+set "_SQLBINDIR=C:\Oracle\sqlcl\bin"
+set "_SQLEXE=sql.exe"
+set "_SQL=%_SQLBINDIR%\%_SQLEXE%"
+
+@REM Calling Main CMD
+%_MAINCMD% %_SQLBIN% %_SQL% %*
+goto:eof
+
+@REM =====================================================================
+@REM End of File
+:eof
+exit /b
+
+@REM =====================================================================
+@REM SQLP.cmd
+@REM Script to call sqlplus
+@echo off
+setlocal enableextensions
+@REM =====================================================================
+@REM script variables
+set "_SCRIPT=%~n0"
+set "_SCRIPTNAME=%0"
+set "_SCRIPTDIR=%~dp0"
+
+@REM Main Wrapper
+set "_MAINCMD=%_SCRIPTDIR%_SQL.cmd"
+
+@REM SQL*Plus
+set "_SQLBIN=SQL*Plus"
+set "_SQLBINDIR=C:\App\Oracle\product\19.0.0\client_1\bin"
+set "_SQLEXE=sqlplus.exe"
+set "_SQL=%_SQLBINDIR%\%_SQLEXE%"
+
+@REM Calling Main CMD
+%_MAINCMD% %_SQLBIN% %_SQL% %*
+goto:eof
+
+@REM =====================================================================
+@REM End of File
+:eof
+exit /b
+
+::::::: SQLP ::::::
+
+@REM =====================================================================
+@REM SQLP.cmd
+@REM Script to call sqlplus
+@echo off
+setlocal enableextensions
+@REM =====================================================================
+@REM script variables
+set "_SCRIPT=%~n0"
+set "_SCRIPTNAME=%0"
+set "_SCRIPTDIR=%~dp0"
+
+@REM Main Wrapper
+set "_MAINCMD=%_SCRIPTDIR%_SQL.cmd"
+
+@REM SQL*Plus
+set "_SQLBIN=SQL*Plus"
+set "_SQLBINDIR=C:\App\Oracle\product\19.0.0\client_1\bin"
+set "_SQLEXE=sqlplus.exe"
+set "_SQL=%_SQLBINDIR%\%_SQLEXE%"
+
+@REM Calling Main CMD
+%_MAINCMD% %_SQLBIN% %_SQL% %*
+goto:eof
+
+@REM =====================================================================
+@REM End of File
+:eof
+exit /b
+
+:::::: _SQL.cmd ::::::
+@echo off
+setlocal enableextensions
+@REM =====================================================================
+@REM _SQL.cmd
+@REM Wrapper Script to call sqlplus or sqlCL
+@REM 2024-07-10 SOB
+@REM =====================================================================
+
+@REM =====================================================================
+@REM CMD Environment
+chcp 65001>nul
+@REM set NLS_LANG=GERMAN_GERMANY.UTF8
+set NLS_LANG=AMERICAN_AMERICA.UTF8
+SET JAVA_TOOL_OPTIONS=-Duser.language=en -Xmx512m
+@REM =====================================================================
+@REM script variables
+if ["%_SCRIPT%"] == [""] set "_SCRIPT=%~n0"
+set "_SCRIPTNAME=%0"
+set "_SCRIPTDIR=%~dp0"
+
+@REM =====================================================================
+@REM @echo Params "%*" & goto:eof
+@REM =====================================================================
+@REM check mandatory parameter
+if "[%3]"=="[]" (
+   @echo. & @echo Usage: %_SCRIPT% ^[params^] ^(^[arg1, arg2, arg3,...^]^)
+   @echo Type %_SCRIPT% -h for more information.
+   endlocal
+   exit /b)
+
+@REM show help if specified
+if ["%3"] == ["-h"] call :_show_help %~1 %~2 & goto:eof
+if ["%3"] == ["-H"] call :_show_vendor_help %~1 %~2 %~3 & goto:eof
+if ["%3"] == ["-V"] call :_show_vendor_help %~1 %~2 %~3 & goto:eof
+
+@REM =====================================================================
+@REM Script Framework
+set "_LIBDIR=%_SCRIPTDIR%lib"
+set "_FUNCTIONS=%_LIBDIR%\_fnc.cmd"
+set "_MACROS=%_LIBDIR%\_mac.cmd"
+
+@REM =====================================================================
+@REM calling macros
+call %_MACROS%
+
+@REM =====================================================================
+@REM main execution
+@echo %l100%
+@echo Client:  %_CLIENT%    User: %_USR%    Date: %_DT%
+@echo Calling: %1  Command: %2 %3 %4 %5 %6 %7 %8 %9
+@echo %l100%
+shift
+cmd /c %1 %2 %3 %4 %5 %6 %7 %8 %9
+
+@REM =====================================================================
+@REM skip subroutines
+goto:eof
+
+@REM =====================================================================
+@REM subroutines (format :_routine_name ... - call :_routine_name)
+
+:_show_help (
+   @echo.
+   @echo Usage:
+   @echo    Start %~1 by either supplying option "/nolog" or
+   @echo    a valid "USER[@TNS | @//CONNECT_STRING]" connection and
+   @echo    (optionally) a Scriptname (full qualified if not in path).
+   @echo.
+   @echo    *** best practise: never supply passwords on commandline! ***
+   @echo.
+   @echo Examples:
+   @echo    %_SCRIPT% /nolog ^(@myscript.sql^)
+   @echo    %_SCRIPT% SCOTT@ORCL ^(@myscript.sql^)
+   @echo    %_SCRIPT% SCOTT@//myhost:port/servicename ^(@myscript.sql^)
+   @echo.
+   @echo Help:
+   @echo    %_SCRIPT% -H for a full usage of %~1
+   @echo    %_SCRIPT% -V to get version of %~1
+   goto:eof
+)
+
+:_show_vendor_help (
+   @echo.
+   if ["%~3"] == ["-H"] @echo *** Displaying Oracle Usage Help for %~1 ***
+   if ["%~3"] == ["-V"] @echo *** Displaying Version of %~1 ***
+   @REM call exe with option
+   %~2 %~3
+)
+
+@REM =====================================================================
+@REM EOF
+:eof
+
+endlocal
+exit /b %ERRORLEVEL%
+
+
+:::::: _SSH.cmd ::::::
+
+@echo off
+setlocal enableextensions
+@REM =====================================================================
+@REM _SSH.cmd
+@REM Wrapper Script to call a OpenSSH
+@REM 2024-07-18 SOB
+@REM =====================================================================
+@REM Name of Product
+set "_SSHBIN=OpenSSH"
+@REM =====================================================================
+@REM SSH executables and files
+set "_SSHEXE=ssh.exe"
+set "_SSH_DIR=C:\Windows\System32\OpenSSH"
+set "_SSH=%_SSH_DIR%\%_SSHEXE%"
+set "_SSH_CONFIG_DIR=%USERPROFILE%\.ssh"
+set "_SSH_CONFIG=%_SSH_CONFIG_DIR%\ssh_config"
+@REM =====================================================================
+@REM CMD Environment
+chcp 65001>nul
+@REM set NLS_LANG=GERMAN_GERMANY.UTF8
+set NLS_LANG=AMERICAN_AMERICA.UTF8
+@REM =====================================================================
+@REM script variables
+if ["%_SCRIPT%"] == [""] set "_SCRIPT=%~n0"
+set "_SCRIPTNAME=%0"
+set "_SCRIPTDIR=%~dp0"
+
+@REM =====================================================================
+@REM uncomment for debugging
+@REM @echo Params "%*" & goto:eof
+@REM =====================================================================
+@REM check mandatory parameter
+if "[%2]"=="[]" (
+   @echo. & @echo Usage: %_SCRIPT% ^[params^] ^(^[arg1, arg2, arg3,...^]^)
+   @echo Type %_SCRIPT% -h for more information.
+   endlocal
+   exit /b)
+
+@REM show help if specified
+if ["%1%2"] == ["-A-h"] call :_show_help_a %_SSHBIN% & goto:eof
+
+@REM if ["%2"] == ["-h"] goto :helpa
+@REM goto :skip
+@REM :helpa
+@REM call :_show_help_a %_SSHBIN% & goto:eof
+@REM :skip
+if ["%2"] == ["-h"] call :_show_help %_SSHBIN% & goto:eof
+if ["%2"] == ["-H"] call :_show_vendor_help %_SSHBIN% %_SSH% & goto:eof
+
+@REM =====================================================================
+@REM Script Framework
+set "_LIBDIR=%_SCRIPTDIR%lib"
+set "_FUNCTIONS=%_LIBDIR%\_fnc.cmd"
+set "_MACROS=%_LIBDIR%\_mac.cmd"
+
+@REM =====================================================================
+@REM calling macros
+call %_MACROS%
+
+@REM =====================================================================
+@REM main execution
+
+@echo %l100%
+@echo Client:  %_CLIENT%    User: %_USR%    Date: %_DT%
+@echo Calling: %_SSHBIN%   Command: %_SSH% %1 %2 %3 %4 %5 %6 %7 %8 %9
+@echo %l100%
+@REM shift
+if ["%1"] == ["-A"] (
+    cmd /c %_SSH% -F %_SSH_CONFIG% %~2
+    ) else (
+        cmd /c %_SSH% %~2
+    )
+
+@REM =====================================================================
+@REM skip subroutines
+goto:eof
+
+@REM =====================================================================
+@REM subroutines (format :_routine_name ... - call :_routine_name)
+
+:_show_help (
+   @echo.
+   @echo Usage:
+   @echo     Start %~1 by either supplying a connection string
+   @echo     or a valid SSH option with a "user@host" connection string.
+   @echo.
+   @echo     *** Best practise: never supply passwords on commandline! ***
+   @echo.
+   @echo Example:
+   @echo     %_SCRIPT% myuser@myhost.com
+   @echo.
+   @echo Help:
+   @echo     %_SCRIPT% -H for commandline usage of %~1
+   goto:eof
+)
+
+:_show_help_a (
+   @echo.
+   @echo Description:
+   @echo    %_SCRIPT% is running %_SSHBIN% with an Agent Named Pipe.
+   @echo.
+   @echo    In this mode, you need Putty Agent CAC started with the
+   @echo    --openssh-config option and running with a
+   @echo    valid certificate loaded.
+   @echo.
+   @echo    If running with a CAPI certificate
+   @echo    you will be prompted for your SmartCard PIN.
+   @echo.
+   @echo    The PIN will only be cached for some time by OpenSSH.
+   @echo    So you eventually will have to provide it again for a new CMD session,
+   @echo    even if configured to cache PIN in PuttyAgentCAC.
+   @echo.
+   @echo    See: https://bookstack.intra.kzvnr.de/books/anwendungsplattform/page/ssh-authentifizierung-per-smartcard
+   @echo    for information how to configure this on your windows client.
+   @echo.
+   @echo    The loaded certificate must either be a private key ssh-^(d^|r^)sa
+   @echo    or a CAPI certificate ^(SmartCard^) that has a matching
+   @echo    public key in target hosts ~/.ssh/authorized_keys file.
+   call :_show_help %_SSHBIN%
+   goto:eof
+)
+
+:_show_vendor_help (
+   @echo.
+   @echo *** Displaying Usage Help for %~1 ***
+   @echo.
+   @REM call ssh.exe without options to display builtin help
+   %~2
+)
+
+@REM =====================================================================
+@REM EOF
+:eof
+
+endlocal
+exit /b %ERRORLEVEL%
+
+:::::: SSH.cmd ::::::
+
+@REM =====================================================================
+@REM SSH.cmd
+@REM Script to call OpenSSH with username@host connection
+@echo off
+setlocal enableextensions
+@REM =====================================================================
+@REM script variables
+set "_SCRIPT=%~n0"
+set "_SCRIPTNAME=%0"
+set "_SCRIPTDIR=%~dp0"
+
+@REM Main Wrapper
+set "_MAINCMD=%_SCRIPTDIR%_SSH.cmd"
+
+@REM =====================================================================
+@REM Calling Main CMD
+%_MAINCMD% -U %*
+goto:eof
+
+@REM =====================================================================
+@REM End of File
+:eof
+exit /b
+
+:::::: SSHA.cmd ::::::
+
+@REM =====================================================================
+@REM SSHA.cmd
+@REM Script to call OpenSSH with Putty Agent integration
+@echo off
+setlocal enableextensions
+@REM =====================================================================
+@REM script variables
+set "_SCRIPT=%~n0"
+set "_SCRIPTNAME=%0"
+set "_SCRIPTDIR=%~dp0"
+
+@REM Main Wrapper
+set "_MAINCMD=%_SCRIPTDIR%_SSH.cmd"
+
+@REM =====================================================================
+@REM Calling Main CMD
+%_MAINCMD% -A %*
+goto:eof
+
+@REM =====================================================================
+@REM End of File
+:eof
+exit /b
+
+::::::: login.sql ::::::
+
+-- **** use SQLPATH if you are on Windows, and use ORACLE_PATH if you are on UNIX. ****
+
+set termout off
+alter session set nls_date_format='DD.MM.YYYY HH24:MI:SS';
+set termout on
+set time on
+set trimspool on
+set define on
+define log="U:\sob\log"
+set sqlprompt "_user'@'_connect_identifier>"
+
