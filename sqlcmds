@@ -391,3 +391,13 @@ set define on
 define log="U:\sob\log"
 set sqlprompt "_user'@'_connect_identifier>"
 
+:::::: addons to sqldeveloper.conf ::::::
+# Language English
+AddVMOption -Duser.language=en
+AddVMOption -Duser.country=US
+
+# Memory
+AddVMOption -Xmx800m
+
+:::::: add before calling SQLcL from cmd.exe :::::::
+SET JAVA_TOOL_OPTIONS=-Duser.language=en -Xmx512m
